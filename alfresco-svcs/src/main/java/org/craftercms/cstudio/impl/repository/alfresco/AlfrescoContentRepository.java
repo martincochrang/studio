@@ -73,6 +73,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     protected static final String MSG_ERROR_RUN_AS_FAILED = "err_alfresco_run_as_failure";
     protected static final String MSG_NODE_REF_IS_NULL_FOR_PATH = "alfresco_noderef_null_for_path";
     protected static final String MSG_CONTENT_FOR_FOLDER_REQUESTED = "alfresco_content_for_folder_requested";
+    protected static final String MSG_CONTENT_READER_IS_NULL_FOR_PATH = "alfresco_content_reader_null_for_path";
 
     private static final Logger logger = LoggerFactory.getLogger(AlfrescoContentRepository.class);
 
@@ -152,7 +153,11 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
                 logger.info(MSG_CONTENT_FOR_FOLDER_REQUESTED, path);
             } else {
                 ContentReader reader = persistenceManagerService.getReader(nodeRef);
-                retStream = reader.getContentInputStream();
+                if (reader != null) {
+                    retStream = reader.getContentInputStream();
+                } else {
+                    logger.info(MSG_CONTENT_READER_IS_NULL_FOR_PATH, path);
+                }
             }
         }
         else {

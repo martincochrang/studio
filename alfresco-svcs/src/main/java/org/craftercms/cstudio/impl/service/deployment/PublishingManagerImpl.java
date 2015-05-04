@@ -242,30 +242,19 @@ public class PublishingManagerImpl implements PublishingManager {
                             input = _contentRepository.getContent(site, null, item.getEnvironment(), item.getPath());
                             if (input == null || input.available() < 0) {
                                 if (!_contentRepository.isFolder(site, item.getPath()) && _contentRepository.contentExists(site, item.getPath())) {
+                                    LOGGER.error("Error getting content from path: " + item.getPath() + " site: " + item.getSite());
+                                    /*
                                     baps = null;
                                     stringPart = null;
                                     filePart = null;
                                     formParts = null;
-                                    throw new ContentNotFoundForPublishingException(site, target.getName(), item.getPath());
-                                } else {
-                                    // Content does not exist - skip deploying file
-                                    continue;
+                                    //throw new ContentNotFoundForPublishingException(site, target.getName(), item.getPath());
+                                    */
                                 }
-                            }
-                        } catch (IOException err) {
-                            LOGGER.error("Error reading input stream for content at path: " + item.getPath() + " site: " + item.getSite());
-                            if (_contentRepository.contentExists(site, item.getPath())) {
-                                baps = null;
-                                stringPart = null;
-                                filePart = null;
-                                formParts = null;
-                                throw new ContentNotFoundForPublishingException(site, target.getName(), item.getPath());
-                            } else {
-                                // Content does not exist - skip deploying file
                                 continue;
                             }
-                        } catch (Throwable err) {
-                            LOGGER.error("Error getting content from path: " + item.getPath() + " site: " + item.getSite());
+                        } catch (IOException err) {
+                            LOGGER.error("Error reading input stream for content at path: " + item.getPath() + " site: " + item.getSite(), err);
                             if (_contentRepository.contentExists(site, item.getPath())) {
                                 baps = null;
                                 stringPart = null;
