@@ -207,6 +207,13 @@ public class FileUploadServlet extends HttpServlet {
 			writeToTarget(parameters, files, target, changeSet);
 			deleteFromTarget(parameters, target, changeSet);
 			// run through post processors
+			if (target.isDefaultProcessingEnabled()) {
+				try {
+					target.getDefaultPostProcessor().doProcess(changeSet, parameters, target);
+				} catch (PublishingException e) {
+					LOGGER.error("Error while running a default post processor", e);
+				}
+			}
 			doPostProcessing(changeSet, parameters, target);
 		} else {
 			throw new IOException("No configuration exists for " + paramTarget);

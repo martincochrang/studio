@@ -19,7 +19,13 @@
                 <entry key="contentFolder"><value>content/wem-projects/{siteId}/{siteId}/work-area</value></entry>
                 <entry key="metadataFolder"><value>metadata/wem-projects/{siteId}/{siteId}/work-area</value></entry>
             </map>
-        </property> 
+        </property>
+        <property name="defaultProcessingEnabled" value="true"/>
+        <property name="defaultPostProcessor">
+            <bean class="org.craftercms.cstudio.publishing.processor.SearchIndexBinaryFilesProcessor">
+                <property name="searchService" ref="PreviewSearchService"/>
+            </bean>
+        </property>
     </bean>
 
     <bean id="PreviewSearchProcessor" class="org.craftercms.cstudio.publishing.processor.SearchUpdateProcessor">
