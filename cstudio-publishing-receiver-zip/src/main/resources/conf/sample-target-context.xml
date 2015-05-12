@@ -29,6 +29,7 @@
 				</entry>
 			</map>
 		</property>
+		<property name="defaultProcessingEnabled" value="false"/>
 	</bean>
 
 	<bean id="sampleCacheInvalidate"

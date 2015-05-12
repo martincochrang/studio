@@ -44,6 +44,9 @@ public class PublishingTarget {
 	/** target publishing post-processors **/
 	private List<PublishingProcessor> postProcessors;
 
+	private PublishingProcessor defaultPostProcessor = null;
+	private boolean defaultProcessingEnabled = false;
+
 	/**
 	 * register self
 	 * 
@@ -97,7 +100,13 @@ public class PublishingTarget {
 		this.postProcessors = postProcessors;
 	}
 
-	/**
+    public PublishingProcessor getDefaultPostProcessor() { return defaultPostProcessor; }
+    public void setDefaultPostProcessor(PublishingProcessor defaultPostProcessor) { this.defaultPostProcessor = defaultPostProcessor; }
+
+    public boolean isDefaultProcessingEnabled() { return defaultProcessingEnabled; }
+    public void setDefaultProcessingEnabled(boolean defaultProcessingEnabled) { this.defaultProcessingEnabled = defaultProcessingEnabled; }
+
+    /**
 	 * @return the manager
 	 */
 	public TargetManager getManager() {
