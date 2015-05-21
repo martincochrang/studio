@@ -601,6 +601,14 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                             dialog.show();
                             me.dialog = dialog;
 
+                            for(var i=0; i<contentItems.length; i++) {
+                                if(contentItems[i].submittedForDeletion==true) {
+                                    document.getElementById("globalSetToDateTime").disabled = true;
+                                    document.getElementById("schedulingSelection").style.display = "none";
+                                    break;
+                                }
+                            }
+                            
                             YDom.get('acnScrollBoxDiv').innerHTML = CSA.StringUtils.format(
                                 '<div class="spinner"><img src="{0}/themes/cstudioTheme/images/wait.gif"> <span class="warn">{1}</span></div>',
                                 CSAContext.authoringAppBaseUri, 'Loading items &amp; dependecies, please wait.');

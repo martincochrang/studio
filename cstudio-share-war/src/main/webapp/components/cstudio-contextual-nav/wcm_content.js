@@ -631,7 +631,21 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                                 CStudioAuthoring.SelectedContent.getSelectedContent());
                         };
 
-                        _this.createNavItem(option, isBulk, isAdmin, isRelevant, false);
+                        var renderFlag = true;
+                        if(option.name == "Schedule") {
+                            var items = CStudioAuthoring.SelectedContent.getSelectedContent();
+                            for(var i=0; i<items.length; i++) {
+                                if(items[i].submittedForDeletion==true) {
+                                    renderFlag = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(renderFlag == true) {
+                            _this.createNavItem(option, isBulk, isAdmin, isRelevant, false);
+                        }
+
                     }
 
                 }
