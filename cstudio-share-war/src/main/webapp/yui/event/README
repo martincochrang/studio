@@ -25,7 +25,7 @@ YUI Library - Event - Release Notes
     address issues caused by the way FireFox persists listeners through 
     page refreshes.
 
-2.4.2-SNAPSHOT
+v2.4.2
   * Reverted clearAttributes() change to fix IE memory leak on iframes/windows
 
 2.4.0
