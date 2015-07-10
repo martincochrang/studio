@@ -16,15 +16,20 @@
  */
 package org.craftercms.cstudio.alfresco.dm.script;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
 import org.alfresco.repo.processor.BaseProcessorExtension;
+import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
+import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmActivityService;
 import org.craftercms.cstudio.alfresco.dm.to.DmContentItemTO;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
+import org.craftercms.cstudio.alfresco.service.api.ActivityService;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.util.ContentFormatUtils;
 import org.slf4j.Logger;
@@ -69,6 +74,28 @@ public class DmActivityServiceScript extends BaseProcessorExtension {
 				String.valueOf(ascending));
 		jsonObject.put(CStudioConstants.PROPERTY_DOCUMENTS, activities);
 		return jsonObject.toString();
+	}
+
+	/**
+	 * post a user activity
+	 *
+	 * @param site site id
+	 * @param user username
+	 * @param key content path
+	 * @param activityType CREATED, UPDATED or DELETED
+	 * @param contentType content type (optional)
+	 * @param extraInfo additional info map (optional)
+	 */
+	public void postActivity(String site, String user, String key, String activityType, String contentType, Map<String, String> extraInfo) {
+		DmActivityService activityService = _servicesManager.getService(DmActivityService.class);
+		ActivityService.ActivityType type = ActivityService.ActivityType.valueOf(activityType);
+		if (extraInfo == null) {
+			extraInfo = new HashMap<>();
+		}
+		if (!StringUtils.isEmpty(contentType)) {
+			extraInfo.put(DmConstants.KEY_CONTENT_TYPE, contentType);
+		}
+		activityService.postActivity(site, user, key, type, extraInfo);
 	}
 
 	public void setServicesManager(ServicesManager servicesManager) {
