@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.craftercms.crafter-studio</groupId>
 	<artifactId>craftercms-site-brochure</artifactId>
-	<version>2.4.3-SNAPSHOT</version>
+	<version>2.4.3</version>
 	<packaging>jar</packaging>
 	<name>Crafter CMS Site Brochure</name>
 	<description>Crafter CMS Site Brochure</description>
@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.craftercms</groupId>
 		<artifactId>crafter-studio-parent</artifactId>
-		<version>2.4.3-SNAPSHOT</version>
+		<version>2.4.3</version>
 		<relativePath>../../parent/pom.xml</relativePath>
 	</parent>
 
