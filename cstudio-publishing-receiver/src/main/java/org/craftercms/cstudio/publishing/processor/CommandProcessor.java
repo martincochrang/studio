@@ -22,10 +22,14 @@ public class CommandProcessor implements PublishingProcessor {
 
     private static Log LOGGER = LogFactory.getLog(CommandProcessor.class);
 
+    final static String STATUS_CREATED = "CREATED";
+    final static String STATUS_UPDATED = "UPDATED";
+    final static String STATUS_DELETED = "DELETED";
+
     // command to run
     private String command;
 
-    // file path patterns to match for sending email
+    // file path patterns to match for execution
     private List<String> matchPatterns;
 
     @Override
@@ -36,8 +40,9 @@ public class CommandProcessor implements PublishingProcessor {
         root += "/" + contentFolder;
         String siteId = parameters.get(FileUploadServlet.PARAM_SITE);
 
-        processFiles(siteId, root, changeSet.getCreatedFiles());
-        processFiles(siteId, root, changeSet.getUpdatedFiles());
+        processFiles(siteId, root, changeSet.getCreatedFiles(), STATUS_CREATED);
+        processFiles(siteId, root, changeSet.getUpdatedFiles(), STATUS_UPDATED);
+        processFiles(siteId, root, changeSet.getDeletedFiles(), STATUS_DELETED);
     }
 
     /**
@@ -46,15 +51,16 @@ public class CommandProcessor implements PublishingProcessor {
      * @param site
      * @param root
      * @param files
+     * @param status
      */
-    private void processFiles(String site, String root, List<String> files) {
+    private void processFiles(String site, String root, List<String> files, String status) {
         if (files != null) {
             for (String file : files) {
                 if (isMatchingPattern(file)) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Processing " + file);
                     }
-                    processFile(site, root, file);
+                    processFile(site, root, file, status);
                 } else {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(file + " does not match a pattern.");
@@ -70,11 +76,13 @@ public class CommandProcessor implements PublishingProcessor {
      * @param site
      * @param root
      * @param file
+     * @param status
      */
-    private void processFile(String site, String root, String file) {
+    private void processFile(String site, String root, String file, String status) {
         BufferedReader reader = null;
         try {
-            String fileCommand = command.replaceAll("SITE", site).replaceAll("ROOT", root).replaceAll("FILE", file);
+            String fileCommand = command.replaceAll("SITE", site).replaceAll("ROOT", root)
+                    .replaceAll("FILE", file).replaceAll("STATUS", status);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Running command with ProcessBuilder: " + fileCommand);
             }
@@ -110,7 +118,7 @@ public class CommandProcessor implements PublishingProcessor {
      * check if the file path is matching one of patterns
      *
      * @param file
-     * @return true if matching
+     * @return true if matching or no match pattern is set
      */
     protected boolean isMatchingPattern(String file) {
         if (getMatchPatterns() != null) {
@@ -123,7 +131,7 @@ public class CommandProcessor implements PublishingProcessor {
                 }
             }
         }
-        return false;
+        return true;
     }
 
     @Override
