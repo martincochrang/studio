@@ -111,25 +111,34 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
 
     @Override
     public void populateDependencyContentItems(String site, DmContentItemTO item, boolean populateUpdatedDependecinesOnly) {
+        populateDependencyContentItems(site, item, null, populateUpdatedDependecinesOnly);
+    }
+
+    @Override
+    public void populateDependencyContentItems(String site, DmContentItemTO item, Set<String> processedDependencies, boolean populateUpdatedDependecinesOnly) {
         try {
+            if (processedDependencies == null) {
+                processedDependencies = new FastSet<String>();
+            }
             String path = item.getUri();
+            processedDependencies.add(path);
             List<DependencyEntity> components = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_COMPONENT);
-            List<DmContentItemTO> compItems = getDependentItems(site, item.getUri(), components, populateUpdatedDependecinesOnly);
+            List<DmContentItemTO> compItems = getDependentItems(site, item.getUri(), components, processedDependencies, populateUpdatedDependecinesOnly);
             item.setComponents(compItems);
             List<DependencyEntity> documents = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_DOCUMENT);
-            List<DmContentItemTO> docItems = getDependentItems(site, item.getUri(), documents, populateUpdatedDependecinesOnly);
+            List<DmContentItemTO> docItems = getDependentItems(site, item.getUri(), documents, processedDependencies, populateUpdatedDependecinesOnly);
             item.setDocuments(docItems);
             List<DependencyEntity> assets = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_ASSET);
-            List<DmContentItemTO> assetItems = getDependentItems(site, item.getUri(), assets, populateUpdatedDependecinesOnly);
+            List<DmContentItemTO> assetItems = getDependentItems(site, item.getUri(), assets,processedDependencies, populateUpdatedDependecinesOnly);
             item.setAssets(assetItems);
             List<DependencyEntity> templates = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_RENDERING_TEMPLATE);
-            List<DmContentItemTO> templateItems = getDependentItems(site, item.getUri(), templates, populateUpdatedDependecinesOnly);
+            List<DmContentItemTO> templateItems = getDependentItems(site, item.getUri(), templates, processedDependencies, populateUpdatedDependecinesOnly);
             item.setRenderingTemplates(templateItems);
             /*List<DependencyEntity> levelDescriptors = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_LEVEL_DESCRIPTOR);
             List<DmContentItemTO> levelDescriptorItems = getDependentItems(site, item.getUri(), levelDescriptors, populateUpdatedDependecinesOnly);
             item.setLevelDescriptors(levelDescriptorItems);*/
             List<DependencyEntity> deletes = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_DELETE);
-            List<DmContentItemTO> deletedItems = getDependentItems(site, item.getUri(), deletes, populateUpdatedDependecinesOnly);
+            List<DmContentItemTO> deletedItems = getDependentItems(site, item.getUri(), deletes, processedDependencies, populateUpdatedDependecinesOnly);
             item.setDeletedItems(deletedItems);
 
 
@@ -147,19 +156,24 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
      * @param populateUpdatedDependecinesOnly
      * @return
      */
-    protected List<DmContentItemTO> getDependentItems(String site, String parentUri, List<org.craftercms.cstudio.alfresco.dm.dependency.DependencyEntity> dependencies, boolean populateUpdatedDependecinesOnly) {
+    protected List<DmContentItemTO> getDependentItems(String site, String parentUri, List<org.craftercms.cstudio.alfresco.dm.dependency.DependencyEntity> dependencies, Set<String> processedDependencies, boolean populateUpdatedDependecinesOnly) {
         List<DmContentItemTO> items = null;
         if (dependencies != null) {
             items = new FastList<DmContentItemTO>(dependencies.size());
             for (DependencyEntity dependency : dependencies) {
                 String path = dependency.getTargetPath();
+                if (processedDependencies.contains(path)) {
+                    continue;
+                }
+                processedDependencies.add(path);
                 try {
                     DmContentItemTO dependencyItem = null;
                     try {
                         ServicesConfig servicesConfig = getService(ServicesConfig.class);
                         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
                         String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
-                        dependencyItem = persistenceManagerService.getContentItem(fullPath);
+                        dependencyItem = persistenceManagerService.getContentItem(fullPath, false);
+                        populateDependencyContentItems(site, dependencyItem, processedDependencies, populateUpdatedDependecinesOnly);
 
                     } catch (ContentNotFoundException e) {
                         logger.warn("Content not found Error while getting a dependent item: " + path + " of " + parentUri + " in site: " + site);
@@ -173,7 +187,6 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                 } catch (ServiceException e) {
                     logger.error("Error while getting a dependent item: " + path + " of " + parentUri + " in site: " + site, e);
                 }
-                /*}*/
             }
         } else {
             items = new FastList<DmContentItemTO>(0);
@@ -727,7 +740,8 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
     public void populatePageDependencies(String site, DmContentItemTO item, boolean populateUpdatedDependecinesOnly) {
         try {
             List<DependencyEntity> pages = _dependencyDaoService.getDependenciesByType(site, item.getUri(), DEPENDENCY_NAME_PAGE);
-            List<DmContentItemTO> pageItems = getDependentItems(site, item.getUri(), pages, populateUpdatedDependecinesOnly);
+            Set<String> processedDependencies = new FastSet<>();
+            List<DmContentItemTO> pageItems = getDependentItems(site, item.getUri(), pages, processedDependencies, populateUpdatedDependecinesOnly);
             List<DmContentItemTO>newPages=new ArrayList<DmContentItemTO>();
             if (populateUpdatedDependecinesOnly) {
                 for (DmContentItemTO pageItem : pageItems) {
