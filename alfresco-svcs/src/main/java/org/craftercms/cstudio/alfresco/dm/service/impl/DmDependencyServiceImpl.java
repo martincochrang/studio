@@ -195,6 +195,107 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
     }
 
     @Override
+    public DmDependencyTO getDependenciesNoCalc(String site, String path, boolean populateUpdatedDependenciesOnly, boolean recursive) {
+        List<String> paths = new FastList<String>(1);
+        paths.add(path);
+        Set<String> processedDependencies = new FastSet<String>();
+
+        List<DmDependencyTO> items = getDependencyItemsNoCalc(site, paths, processedDependencies, populateUpdatedDependenciesOnly, recursive);
+        if (items.size() > 0) {
+            return items.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    protected List<DmDependencyTO> getDependencyItemsNoCalc(String site, List<String> paths, Set<String> processedDependencies, boolean populateUpdatedDependenciesOnly, boolean recursive) {
+        List<DmDependencyTO> items = new FastList<DmDependencyTO>(paths.size());
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        for (String path : paths) {
+            if (processedDependencies.contains(path)) {
+                continue;
+            }
+            processedDependencies.add(path);
+            DmDependencyTO item = new DmDependencyTO();
+            item.setUri(path);
+            if (recursive) {
+                if (DmUtils.matchesPattern(path, servicesConfig.getPagePatterns(site))
+                        || DmUtils.matchesPattern(path, servicesConfig.getComponentPatterns(site))) {
+                    /*try {
+                        Document document = this.getDocument(site, null, path);
+                        if (document == null) {
+                            return items;
+                        }
+
+                        // Check for skipDependencies flag
+                        Element root = document.getRootElement();
+                        boolean skipDependencies = false;
+                        String isSkipDependenciesValue = root.valueOf("//" + DmXmlConstants.ELM_SKIP_DEPENDENCIES);
+                        if (isSkipDependenciesValue != null && !"".equals(isSkipDependenciesValue)) {
+                            skipDependencies = ContentFormatUtils.getBooleanValue(isSkipDependenciesValue);
+                        }
+                        if (skipDependencies) {
+                            return items;
+                        }
+                    } catch (ContentNotFoundException e) {
+                        logger.error("Error while getting dependent file names for " + path + " in " + site, e);
+                    }*/
+                }
+
+                try {
+                    List<DependencyEntity> assetsList = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_ASSET);
+                    List<String> assetPaths = new FastList<String>();
+                    for (DependencyEntity assetEntity : assetsList) {
+                        assetPaths.add(assetEntity.getTargetPath());
+                    }
+                    List<DmDependencyTO> assets = getDependencyItemsNoCalc(site, assetPaths, processedDependencies, populateUpdatedDependenciesOnly, recursive);
+                    item.setAssets(assets);
+
+                    List<DependencyEntity> componentsList = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_COMPONENT);
+                    List<String> componentsPaths = new FastList<String>();
+                    for (DependencyEntity componentEntity : componentsList) {
+                        componentsPaths.add(componentEntity.getTargetPath());
+                    }
+                    List<DmDependencyTO> components = getDependencyItemsNoCalc(site, componentsPaths, processedDependencies, populateUpdatedDependenciesOnly, recursive);
+                    item.setComponents(components);
+
+                    List<DependencyEntity> documentsList = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_DOCUMENT);
+                    List<String> documentsPaths = new FastList<String>();
+                    for (DependencyEntity documentEntity : documentsList) {
+                        documentsPaths.add(documentEntity.getTargetPath());
+                    }
+                    List<DmDependencyTO> documents = getDependencyItemsNoCalc(site, documentsPaths, processedDependencies, populateUpdatedDependenciesOnly, recursive);
+                    item.setDocuments(documents);
+
+                    List<DependencyEntity> templatesList = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_RENDERING_TEMPLATE);
+                    List<String> templatesPaths = new FastList<String>();
+                    for (DependencyEntity templateEntity : templatesList) {
+                        templatesPaths.add(templateEntity.getTargetPath());
+                    }
+                    List<DmDependencyTO> templates = getDependencyItemsNoCalc(site, templatesPaths, processedDependencies, populateUpdatedDependenciesOnly, recursive);
+                    item.setRenderingTemplates(templates);
+
+                    /**
+                     * get Page dependency as well
+                     */
+                    List<DependencyEntity> pagesList = _dependencyDaoService.getDependenciesByType(site, path, DEPENDENCY_NAME_PAGE);
+                    List<String> pagesPaths = new FastList<String>();
+                    for (DependencyEntity pageEntity : pagesList) {
+                        pagesPaths.add(pageEntity.getTargetPath());
+                    }
+                    List<DmDependencyTO> pages = getDependencyItemsNoCalc(site, pagesPaths, processedDependencies, populateUpdatedDependenciesOnly, recursive);
+                    item.setPages(pages);
+                } catch (SQLException e) {
+                    logger.error("Error while getting dependent file names for " + path + " in " + site, e);
+                }
+
+            }
+            items.add(item);
+        }
+        return items;
+    }
+
+    @Override
     public DmDependencyTO getDependencies(String site, String sub, String path, boolean populateUpdatedDependecinesOnly, boolean recursive) {
         String sandbox = null;
         return getDependencies(site, sub, sandbox, path, populateUpdatedDependecinesOnly, recursive);

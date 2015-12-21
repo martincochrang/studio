@@ -321,7 +321,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
             /**
              * Get dependent pages
              */
-            DmDependencyTO dmDependencyTo = dmDependencyService.getDependencies(site, null, item.getString(JSON_KEY_URI), false, true);
+            DmDependencyTO dmDependencyTo = dmDependencyService.getDependenciesNoCalc(site, item.getString(JSON_KEY_URI), false, true);
             List<DmDependencyTO> dependentPages = new FastList<DmDependencyTO>();
             if (dmDependencyTo != null) {
                 dependentPages = dmDependencyTo.getPages();
@@ -666,7 +666,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                             }
                             renameItems.set(i, renamedItem);
                         }
-                       
+
                         dmRenameService.goLive(site, sub, renameItems, approver, mcpContext);
                     }
 
@@ -753,7 +753,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
             }
         } else {
             DmPathTO childPathTO = new DmPathTO(persistenceManagerService.getNodePath(fileInfo.getNodeRef()));
-            DmDependencyTO childDep = dmDependencyService.getDependencies(site, null, childPathTO.getRelativePath(), false, true);
+            DmDependencyTO childDep = dmDependencyService.getDependenciesNoCalc(site, childPathTO.getRelativePath(), false, true);
             if (childDep != null) {
                 toRet.add(childDep);
             }

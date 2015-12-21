@@ -59,6 +59,8 @@ public interface DmDependencyService {
 
     void populateDependencyContentItems(String site, DmContentItemTO item, Set<String> processedDependencies, boolean populateUpdatedDependecinesOnly);
 
+    DmDependencyTO getDependenciesNoCalc(String site, String path, boolean populateUpdatedDependenciesOnly, boolean recursive);
+
     /**
      * get dependent items as WCM content items from the content at the given path
      *
